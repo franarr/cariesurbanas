@@ -208,6 +208,29 @@ html, body { height: 100%; overflow: hidden; font-family: var(--font); backgroun
 .measure-clear:hover { background: var(--accent-10); color: var(--accent); }
 .measure-cursor .maplibregl-canvas { cursor: crosshair !important; }
 
+/* ===== LAYER MODAL DESKTOP (Floating Panel) ===== */
+@media (min-width: 769px) {
+    #modal-layers {
+        pointer-events: none; /* Allow clicking the map behind it */
+    }
+    #modal-layers .modal-overlay {
+        display: none; /* Hide background dimming */
+    }
+    #modal-layers .modal-card {
+        position: absolute;
+        top: 24px;
+        right: 90px;
+        margin: 0;
+        pointer-events: auto; /* Re-enable clicks on the panel */
+        max-height: calc(100vh - 48px);
+        animation: slideInRight 0.3s var(--ease);
+    }
+    @keyframes slideInRight {
+        from { opacity: 0; transform: translateX(20px); }
+        to { opacity: 1; transform: translateX(0); }
+    }
+}
+
 /* ===== RESPONSIVE (MOBILE) ===== */
 @media (max-width: 768px) {
     .maplibregl-ctrl-top-right, .maplibregl-ctrl-bottom-left { display: none; }
