@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="Caries Urbanas — Observatorio de inmuebles abandonados, terrenos baldíos y estructuras en peligro en Santa Fe, Argentina. Concejal Lucas Simoniello · #Encuentro.">
+    <title>Caries Urbanas · Observatorio Urbano de Santa Fe</title>
+
+    <!-- MapLibre GL JS -->
+    <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+    <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+
+    <!-- Turf.js -->
+    <script src="https://unpkg.com/@turf/turf@7/turf.min.js"></script>
+
+    <!-- GSAP -->
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.7/dist/gsap.min.js"></script>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <!-- ========== LOADING SCREEN ========== -->
+    <div id="loading-screen">
+        <div class="loader-content">
+            <h1 class="loader-brand">Caries Urbanas</h1>
+            <div class="loader-pin">
+                <img src="image/cariesurbanas.svg" alt="Logo Caries Urbanas" style="width: 80px;">
+            </div>
+            <p class="loader-text">Cargando observatorio urbano...</p>
+            <div class="loader-bar">
+                <div class="loader-bar-fill" id="loader-bar-fill"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== MAP ========== -->
+    <div id="map"></div>
+
+    <!-- ========== TOP UI: SEARCH & STATUS FILTERS ========== -->
+    <div id="top-ui">
+        <div class="search-inner">
+            <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            <input type="text" id="search-input" placeholder="Buscar dirección, lote..." autocomplete="off">
+            <div id="search-results" class="search-results hidden"></div>
+        </div>
+
+        <div class="quick-filters">
+            <button class="chip" data-status="untreated"><span class="chip-dot chip-dot-red"></span>Sin tratar</button>
+            <button class="chip" data-status="treating"><span class="chip-dot chip-dot-orange"></span>En tratamiento</button>
+            <button class="chip" data-status="treated"><span class="chip-dot chip-dot-green"></span>Tratadas</button>
+        </div>
+    </div>
+
+    <!-- ========== SIDEBAR (RIGHT FABS) ========== -->
+    <div id="right-sidebar">
+        <div class="sidebar-fabs">
+            <!-- Measure -->
+            <button class="fab" id="fab-measure" title="Herramienta de Medición">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="2" y="7" width="20" height="10" rx="2" ry="2"/><line x1="6" y1="7" x2="6" y2="11"/><line x1="10" y1="7" x2="10" y2="9"/><line x1="14" y1="7" x2="14" y2="11"/><line x1="18" y1="7" x2="18" y2="9"/>
+                </svg>
+            </button>
+            <!-- Info -->
+            <button class="fab" id="fab-info" title="Sobre el Proyecto">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
+                </svg>
+            </button>
+            <!-- Participate -->
+            <button class="fab" id="fab-participate" title="Participación Ciudadana">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+            </button>
+            <!-- Layers -->
+            <button class="fab" id="fab-layers" title="Capas">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 12 12 17 22 12"/><polyline points="2 17 12 22 22 17"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- ========== BOTTOM PILL (DASHBOARD/STATS) ========== -->
+    <div id="bottom-bar-container">
+        <button id="btn-open-stats" class="bottom-pill">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 20V10M12 20V4M6 20v-6"/>
+            </svg>
+            <span>Estadísticas del Observatorio</span>
+        </button>
+    </div>
+
+    <!-- ========== ONBOARDING TOUR ========== -->
+    <div id="onboarding-tour" class="modal hidden" style="z-index: 9999;">
+        <div class="modal-overlay" id="tour-overlay" style="background: rgba(0,0,0,0.75); backdrop-filter: blur(3px);"></div>
+        
+        <div class="tour-card" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--bg-white); border-radius: 20px; padding: 24px; width: 300px; z-index: 10000; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.4);">
+            <div style="display: flex; justify-content: center; align-items: center; margin: 0 auto 16px;">
+                <img src="image/cariesurbanas.svg" alt="Caries Urbanas Logo" style="width: 48px;">
+            </div>
+            <h2 style="margin: 0 0 8px; font-size: 20px; font-family: 'Montserrat', sans-serif;">¡Bienvenido al Observatorio!</h2>
+            <p style="margin: 0 0 20px; font-size: 14px; color: var(--text-muted);">Te mostramos rápidamente cómo explorar el mapa de Caries Urbanas.</p>
+            <button id="tour-start" class="btn-primary" style="width: 100%; padding: 12px; font-size: 14px;">Comenzar recorrido</button>
+        </div>
+        
+        <div id="tour-highlight-box" style="position: absolute; border: 3px dashed var(--accent); border-radius: 12px; box-shadow: 0 0 0 9999px rgba(0,0,0,0.7); pointer-events: none; transition: all 0.4s ease; display: none; z-index: 9998;"></div>
+        
+        <div id="tour-step-tooltip" style="position: absolute; background: var(--bg-white); border-radius: 14px; padding: 16px; width: 260px; z-index: 9999; display: none; box-shadow: 0 10px 25px rgba(0,0,0,0.4); transition: all 0.4s ease;">
+            <p id="tour-step-text" style="margin: 0 0 16px; font-size: 14px; line-height: 1.4; color: var(--text-body);"></p>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span id="tour-step-count" style="font-size: 12px; color: var(--text-muted); font-weight: 600;">1/3</span>
+                <button id="tour-next" class="btn-primary" style="padding: 8px 16px; border-radius: 20px; font-size: 13px;">Siguiente</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== MODAL: LAYERS ========== -->
+    <div id="modal-layers" class="modal hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-card bottom-sheet modal-card-sm">
+            <button class="modal-close" data-close="modal-layers">✕</button>
+            <h2 class="modal-title">Capas</h2>
+            <p class="modal-subtitle">Visualización del mapa</p>
+
+            <div class="layer-group">
+                <h3 class="layer-group-title">Mapa Base</h3>
+                <label class="layer-option">
+                    <input type="radio" name="base-map" value="vector" checked>
+                    <span class="radio-custom"></span>
+                    Vector Oscuro (Predeterminado)
+                </label>
+                <label class="layer-option">
+                    <input type="radio" name="base-map" value="satellite">
+                    <span class="radio-custom"></span>
+                    Satelital
+                </label>
+            </div>
+
+            <div class="layer-group">
+                <h3 class="layer-group-title">Capas de Datos</h3>
+                <label class="layer-option">
+                    <input type="checkbox" id="layer-heatmap">
+                    <span class="check-custom"></span>
+                    Mapa de Calor
+                </label>
+                <label class="layer-option">
+                    <input type="checkbox" id="layer-clusters">
+                    <span class="check-custom"></span>
+                    Agrupar Puntos (Clusters)
+                </label>
+                <label class="layer-option">
+                    <input type="checkbox" id="layer-districts" checked>
+                    <span class="check-custom"></span>
+                    Límites de Distritos
+                </label>
+            </div>
+
+            <div class="layer-group" style="margin-top: 24px;">
+                <h3 class="layer-group-title">Filtro de Distrito</h3>
+                <div id="district-checkboxes" style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px;">
+                    <!-- JS fills this -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <!-- ========== MODAL: ABOUT / CAROUSEL ========== -->
+    <div id="modal-info" class="modal hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-card bottom-sheet">
+            <button class="modal-close" data-close="modal-info">✕</button>
+            <div class="modal-carousel" id="info-carousel">
+                <!-- Slide 1 -->
+                <div class="carousel-slide active" data-slide="0">
+                    <h2 class="modal-title">Caries Urbanas</h2>
+                    <p class="modal-subtitle" style="font-size:10px;">Sistema de gestión integral</p>
+                    <div class="modal-body">
+                        <p><strong>¿QUÉ SON LAS CARIES URBANAS?</strong></p>
+                        <p>Inmuebles públicos o privados que se encuentren en gran estado de abandono y que generen un impacto negativo en el entorno urbano.</p>
+                        <p style="margin-top: 14px; margin-bottom: 6px;"><strong>OBJETIVOS</strong></p>
+                        <ul class="icon-list" style="font-size: 12.5px;">
+                            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> <span>Fortalecer la gestión activa del uso del suelo municipal.</span></li>
+                            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> <span>Fomentar el desarrollo urbano, económico y social.</span></li>
+                            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> <span>Detectar oportunidades para intervenciones estratégicas y desalentar la especulación.</span></li>
+                        </ul>
+                    </div>
+                </div>
+                <!-- Slide 2 -->
+                <div class="carousel-slide" data-slide="1">
+                    <h2 class="modal-title">Criterios</h2>
+                    <p class="modal-subtitle" style="font-size:10px;">Calificación de Caries Urbanas</p>
+                    <div class="modal-body">
+                        <ul class="icon-list" style="font-size: 13px;">
+                            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/><line x1="8" y1="18" x2="8.01" y2="18"/><line x1="16" y1="18" x2="16.01" y2="18"/><line x1="12" y1="14" x2="12.01" y2="14"/><line x1="8" y1="14" x2="8.01" y2="14"/><line x1="16" y1="14" x2="16.01" y2="14"/><line x1="12" y1="10" x2="12.01" y2="10"/><line x1="8" y1="10" x2="8.01" y2="10"/><line x1="16" y1="10" x2="16.01" y2="10"/></svg> <span><strong>Estado edilicio:</strong> Abandono o desuso por un período superior a 3 años, falta de mantenimiento.</span></li>
+                            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"/></svg> <span><strong>Estado de mantenimiento:</strong> Incumplimientos en higiene y seguridad.</span></li>
+                            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg> <span><strong>Situación dominial:</strong> Irregularidades y conflictos legales.</span></li>
+                            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="9" y1="18" x2="15" y2="18"/><line x1="10" y1="22" x2="14" y2="22"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg> <span><strong>Servicios públicos:</strong> Inexistencia de conexiones o falta de consumo prolongado.</span></li>
+                            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg> <span><strong>Situación económica:</strong> Deudas municipales significativas.</span></li>
+                        </ul>
+                    </div>
+                </div>
+                <!-- Slide 3 -->
+                <div class="carousel-slide" data-slide="2">
+                    <h2 class="modal-title">Estrategias</h2>
+                    <p class="modal-subtitle" style="font-size:10px;">Intervención Urbanística</p>
+                    <div class="modal-body" style="font-size:13px;">
+                        <p><strong>Grandes áreas de caries urbanas:</strong> Generación de espacios verdes, reservas para el Banco de Tierras, o distritos especiales para vivienda e infraestructura.</p>
+                        <p><strong>Inmuebles vacantes individuales:</strong> Evaluación caso por caso para aplicar Tributos, Multas, Convenios Urbanísticos, Bonos de edificabilidad o adquisición.</p>
+                        <p><strong>Planes de utilización:</strong> Los propietarios calificados podrán presentar planes para la reactivación de los inmuebles.</p>
+                        <div style="display:flex; gap:8px; margin-top:16px;">
+                            <a href="https://drive.google.com/file/d/1CkAC-pHbmfREvxin3budFuWh_AHp-JDN/view?usp=sharing" class="btn-primary" style="flex:1; padding:10px; font-size:12px;" target="_blank" rel="noopener">Proyecto Legislativo</a>
+                            <a href="https://lucassimoniello.com.ar/caries-urbanas/" class="btn-secondary" style="flex:1; padding:10px; font-size:12px;" target="_blank" rel="noopener">Web Oficial</a>
+                        </div>
+                    </div>
+                </div>
+                <!-- Logos Slide -->
+                <div class="carousel-slide" data-slide="3">
+                    <h2 class="modal-title">Equipo de Trabajo</h2>
+                    <p class="modal-subtitle">Institucional</p>
+                    <div class="modal-body align-center">
+                        <p>Iniciativa impulsada por:</p>
+                        <div class="logos-container">
+                            <a href="https://lucassimoniello.com.ar/" target="_blank" rel="noopener"><img src="image/lucassimoniellosinfondo.png" alt="Lucas Simoniello" class="brand-logo-large"></a>
+                            <a href="https://encuentrosantafe.com.ar/quienes-somos-2/" target="_blank" rel="noopener"><img src="image/encuentrosinfondo.png" alt="#Encuentro" class="brand-logo-large brand-logo-encuentro-large"></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Carousel controls -->
+            <div class="carousel-controls">
+                <button class="carousel-btn" id="carousel-prev">←</button>
+                <div class="carousel-dots" id="carousel-dots"></div>
+                <button class="carousel-btn" id="carousel-next">→</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== MODAL: STATS / DASHBOARD ========== -->
+    <div id="modal-stats" class="modal hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-card bottom-sheet modal-card-wide">
+            <button class="modal-close" data-close="modal-stats">✕</button>
+            <h2 class="modal-title">Estadísticas</h2>
+            <p class="modal-subtitle">Análisis espacial del relevamiento</p>
+
+            <div class="stats-grid">
+                <div class="stat-card stat-accent">
+                    <div class="stat-number" id="stat-total">0</div>
+                    <div class="stat-label">Lotes Relevados</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="stat-districts">0</div>
+                    <div class="stat-label">Distritos Afectados</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="stat-zones">0</div>
+                    <div class="stat-label">Zonas Inmobiliarias</div>
+                </div>
+                <div class="stat-card stat-critical">
+                    <div class="stat-number" id="stat-critical">—</div>
+                    <div class="stat-label">Distrito Más Crítico</div>
+                </div>
+            </div>
+
+            <!-- District Chart -->
+            <div class="chart-section">
+                <h3 class="filter-label">Distribución por Distrito</h3>
+                <div id="district-chart" class="district-chart"></div>
+            </div>
+
+            <!-- ROU Chart -->
+            <div class="chart-section" style="margin-top: 24px; border-top: 1px solid var(--border); padding-top: 16px;">
+                <h3 class="filter-label">Zonificación (ROU)</h3>
+                <div id="rou-chart" class="district-chart"></div>
+            </div>
+            
+            <p style="font-size: 11px; color: var(--text-muted); text-align: center; margin-top: 10px;">
+                *Los datos de distritos y zonas son reales, extraídos del set de datos oficial.
+            </p>
+        </div>
+    </div>
+
+    <!-- ========== MODAL: CITIZEN PARTICIPATION ========== -->
+    <div id="modal-participate" class="modal hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-card bottom-sheet">
+            <button class="modal-close" data-close="modal-participate">✕</button>
+            <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 20px;">
+                <div style="background: var(--accent-10); width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                    </svg>
+                </div>
+                <div>
+                    <h2 class="modal-title" style="margin:0; font-size: 24px;">Participación</h2>
+                    <p class="modal-subtitle" style="margin: 4px 0 0 0; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Tu voz importa</p>
+                </div>
+            </div>
+            <div class="modal-body">
+                <p>Este observatorio es una herramienta <strong>ciudadana</strong>. Las caries urbanas no son solo un problema del municipio; <strong>son tu problema, son nuestro problema</strong>.</p>
+                <p>¿Conocés un inmueble abandonado, un terreno baldío peligroso o una estructura a punto de colapsar en tu barrio? <strong>Reportalo.</strong></p>
+                
+                <div class="participate-why">
+                    <h4>Motivos para participar:</h4>
+                    <ul class="icon-list" style="margin-top: 10px;">
+                        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> <span>Tu reporte fortalece la evidencia de la base de datos.</span></li>
+                        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> <span>Más datos permiten fundamentar la normativa local.</span></li>
+                        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> <span>Protegés la seguridad de tus vecinos.</span></li>
+                    </ul>
+                </div>
+                <a href="https://forms.gle/example" class="btn-primary btn-full" style="margin-top:20px;" target="_blank" rel="noopener" id="btn-report-form">
+                    Formulario de Denuncia
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== FEATURE DETAIL (BOTTOM SHEET) ========== -->
+    <div id="feature-detail" class="feature-detail hidden">
+        <button id="detail-close" class="detail-close" style="z-index: 10;">✕</button>
+        
+        <div class="detail-header" style="margin-bottom: 12px; padding-right: 24px;">
+            <span id="detail-badge" class="detail-badge">LOTE</span>
+            <h2 id="detail-title" class="detail-title" style="margin-top: 6px;">—</h2>
+        </div>
+
+        <div id="detail-image-container" style="width: 100%; height: 200px; border-radius: 8px; overflow: hidden; margin-bottom: 16px; display: none; background: var(--bg-off); position: relative; border: 1px solid var(--border);">
+            <img id="detail-image" src="" alt="Vista del Inmueble" style="width: 100%; height: 100%; object-fit: cover; display: block;">
+            <div style="position: absolute; bottom: 8px; right: 8px; background: rgba(0,0,0,0.6); color: white; padding: 4px 10px; border-radius: 12px; font-size: 10px; backdrop-filter: blur(2px); font-weight: 500;">Registro Visual</div>
+        </div>
+
+        <div class="detail-rows">
+            <div class="detail-row">
+                <span class="detail-key">Dirección</span>
+                <span class="detail-val" id="detail-address">—</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-key">Distrito</span>
+                <span class="detail-val" id="detail-district">—</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-key">Zona Inmobiliaria</span>
+                <span class="detail-val" id="detail-zone">—</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-key">ID Relevamiento</span>
+                <span class="detail-val" id="detail-id">—</span>
+            </div>
+        </div>
+        
+        <div class="detail-actions" style="margin-top: 10px;">
+            <button class="btn-secondary btn-full" id="detail-btn-fly">
+                Centrar en Mapa
+            </button>
+        </div>
+    </div>
+
+    <!-- ========== MEASURE TOOLTIP ========== -->
+    <div id="measure-bar" class="measure-bar hidden">
+        <span id="measure-text">Clic para medir</span>
+        <button id="measure-clear" class="measure-clear">✕</button>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
