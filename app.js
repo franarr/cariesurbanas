@@ -36,6 +36,7 @@ const State = {
     activeDistricts: [],
     activeStatus: 'all',
     isMeasuring: false,
+    measureFinished: false,
     measurePts: [],
     carouselIndex: 0,
     carouselTotal: 4
@@ -121,7 +122,7 @@ function addSourcesAndLayers() {
         id: 'satellite-layer',
         type: 'raster',
         source: 'satellite',
-        layout: { visibility: 'none' }
+        layout: { visibility: 'visible' }
     }, map.getStyle().layers.find(l => l.id.includes('water'))?.id);
 
     // 2. DISTRICTS
@@ -235,6 +236,7 @@ function addSourcesAndLayers() {
     });
 
     // Measure tool
+    map.addLayer({ id: 'measure-fill', type: 'fill', source: 'measure', filter: ['==', '$type', 'Polygon'], paint: { 'fill-color': '#4AABB5', 'fill-opacity': 0.2 } });
     map.addLayer({ id: 'measure-line', type: 'line', source: 'measure', filter: ['==', '$type', 'LineString'], paint: { 'line-color': '#4AABB5', 'line-width': 3, 'line-dasharray': [3, 2] } });
     map.addLayer({ id: 'measure-pts', type: 'circle', source: 'measure', filter: ['==', '$type', 'Point'], paint: { 'circle-radius': 5, 'circle-color': '#4AABB5', 'circle-stroke-width': 2, 'circle-stroke-color': '#fff' } });
 }
@@ -387,7 +389,7 @@ function setupSidebar() {
         if (State.isMeasuring) {
             bar.classList.remove('hidden'); mapEl.classList.add('measure-cursor');
             document.getElementById('measure-text').textContent = 'Clic en el mapa para medir';
-            State.measurePts = []; updateMeasure();
+            State.measurePts = []; State.measureFinished = false; updateMeasure();
             State.map.on('click', handleMeasureClick);
         } else {
             bar.classList.add('hidden'); mapEl.classList.remove('measure-cursor');
@@ -396,6 +398,22 @@ function setupSidebar() {
         }
     });
     document.getElementById('measure-clear').addEventListener('click', clearMeasure);
+    document.getElementById('measure-finish').addEventListener('click', () => {
+        if (State.measurePts.length >= 3) {
+            State.measureFinished = true;
+            updateMeasure();
+            // Update text to show final area/distance
+            const area = turf.area(turf.polygon([[...State.measurePts, State.measurePts[0]]]));
+            const areaText = area >= 10000 ? `${(area / 10000).toFixed(2)} ha` : `${area.toFixed(1)} m²`;
+            document.getElementById('measure-text').textContent = `✅ Área: ${areaText}`;
+        } else if (State.measurePts.length === 2) {
+            State.measureFinished = true;
+            updateMeasure();
+            const dist = turf.length(turf.lineString(State.measurePts), { units: 'meters' });
+            const distText = dist >= 1000 ? `${(dist / 1000).toFixed(2)} km` : `${dist.toFixed(1)} m`;
+            document.getElementById('measure-text').textContent = `✅ Distancia: ${distText}`;
+        }
+    });
 
     // Bottom Stats Pill
     document.getElementById('btn-open-stats').addEventListener('click', () => { updateStats(); openModal('modal-stats'); });
@@ -403,17 +421,28 @@ function setupSidebar() {
 
 // ─── MEASURE LOGIC ───────────────────────────────────
 function handleMeasureClick(e) {
-    if (!State.isMeasuring) return;
+    if (!State.isMeasuring || State.measureFinished) return;
     State.measurePts.push([e.lngLat.lng, e.lngLat.lat]);
     updateMeasure(); updateMeasureText();
 }
 function updateMeasure() {
     const feats = [];
     State.measurePts.forEach(c => feats.push({ type: 'Feature', geometry: { type: 'Point', coordinates: c } }));
-    if (State.measurePts.length >= 2) feats.push({ type: 'Feature', geometry: { type: 'LineString', coordinates: State.measurePts } });
+    
+    let lineCoords = [...State.measurePts];
+    if (State.measureFinished && State.measurePts.length >= 3) {
+        lineCoords.push(State.measurePts[0]);
+    }
+    if (lineCoords.length >= 2) {
+        feats.push({ type: 'Feature', geometry: { type: 'LineString', coordinates: lineCoords } });
+    }
+    if (State.measurePts.length >= 3) {
+        feats.push({ type: 'Feature', geometry: { type: 'Polygon', coordinates: [[...State.measurePts, State.measurePts[0]]] } });
+    }
     State.map.getSource('measure').setData({ type: 'FeatureCollection', features: feats });
 }
 function updateMeasureText() {
+    if (State.measureFinished) return;
     const el = document.getElementById('measure-text');
     if (State.measurePts.length < 2) { el.textContent = `${State.measurePts.length} punto(s) — clic para agregar`; return; }
     const dist = turf.length(turf.lineString(State.measurePts), { units: 'meters' });
@@ -425,7 +454,9 @@ function updateMeasureText() {
     el.textContent = `📏 ${text} (${State.measurePts.length} vértices)`;
 }
 function clearMeasure() {
-    State.measurePts = []; updateMeasure();
+    State.measurePts = []; 
+    State.measureFinished = false;
+    updateMeasure();
     document.getElementById('measure-text').textContent = 'Clic en el mapa para medir';
 }
 

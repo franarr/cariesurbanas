@@ -134,14 +134,14 @@
             <div class="layer-group">
                 <h3 class="layer-group-title">Mapa Base</h3>
                 <label class="layer-option">
-                    <input type="radio" name="base-map" value="vector" checked>
+                    <input type="radio" name="base-map" value="vector">
                     <span class="radio-custom"></span>
-                    Vector Oscuro (Predeterminado)
+                    Vector Oscuro
                 </label>
                 <label class="layer-option">
-                    <input type="radio" name="base-map" value="satellite">
+                    <input type="radio" name="base-map" value="satellite" checked>
                     <span class="radio-custom"></span>
-                    Satelital
+                    Satelital (Predeterminado)
                 </label>
             </div>
 
@@ -369,6 +369,7 @@
     <!-- ========== MEASURE TOOLTIP ========== -->
     <div id="measure-bar" class="measure-bar hidden">
         <span id="measure-text">Clic para medir</span>
+        <button id="measure-finish" class="btn-primary" style="padding: 4px 10px; font-size: 11px; margin-left: 8px; border-radius: 20px;">Finalizar</button>
         <button id="measure-clear" class="measure-clear">✕</button>
     </div>
 
