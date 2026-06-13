@@ -190,8 +190,13 @@ html, body { height: 100%; overflow: hidden; font-family: var(--font); backgroun
 .btn-full { width: 100%; }
 
 /* ===== FEATURE DETAIL ===== */
-.feature-detail { position: fixed; top: 80px; right: 80px; z-index: 300; background: var(--bg-white); border-radius: var(--radius-lg); box-shadow: var(--shadow-xl); width: 340px; padding: 24px 22px 20px; border: 1px solid var(--border); }
+.feature-detail { position: relative; z-index: 300; background: var(--bg-white); border-radius: var(--radius-lg); box-shadow: var(--shadow-xl); width: 340px; padding: 24px 22px 20px; border: 1px solid var(--border); animation: zoomInPopup 0.3s var(--ease) forwards; transform-origin: bottom center; }
+@keyframes zoomInPopup { from { opacity: 0; transform: scale(0.9) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
 .feature-detail.hidden { display: none; }
+
+/* MapLibre Popup Overrides */
+.maplibregl-popup-content { background: transparent !important; padding: 0 !important; box-shadow: none !important; border-radius: 0 !important; }
+.maplibregl-popup-tip { border-top-color: var(--bg-white) !important; border-bottom-color: var(--bg-white) !important; border-left-color: var(--bg-white) !important; border-right-color: var(--bg-white) !important; }
 .detail-close { position: absolute; top: 12px; right: 12px; width: 28px; height: 28px; border: none; border-radius: 50%; background: var(--bg); color: var(--text-muted); font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
 .detail-close:hover { background: var(--accent-10); color: var(--accent); }
 .detail-badge { display: inline-block; padding: 3px 12px; background: var(--accent-10); color: var(--accent); border-radius: var(--radius-full); font-size: 10px; font-weight: 700; letter-spacing: 1.5px; margin-bottom: 8px; }
@@ -255,7 +260,7 @@ html, body { height: 100%; overflow: hidden; font-family: var(--font); backgroun
     .modal-card { width: 100%; max-width: 100%; margin: 0; border-radius: var(--radius-lg) var(--radius-lg) 0 0; max-height: 85vh; padding: 24px 20px 20px; animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
     @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
 
-    .feature-detail { top: auto; right: 0; bottom: 0; left: 0; width: 100%; border-radius: var(--radius-lg) var(--radius-lg) 0 0; border: none; box-shadow: 0 -4px 20px rgba(0,0,0,0.1); padding: 24px 20px 20px; animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    .feature-detail { position: fixed; top: auto; right: 0; bottom: 0; left: 0; width: 100%; border-radius: var(--radius-lg) var(--radius-lg) 0 0; border: none; box-shadow: 0 -4px 20px rgba(0,0,0,0.1); padding: 24px 20px 20px; animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
     .stats-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
     .stat-number { font-size: 24px; }
 }

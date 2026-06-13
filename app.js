@@ -490,9 +490,9 @@ function openDetail(feat) {
         if (currentPopup) currentPopup.remove();
         
         detailEl.classList.remove('hidden');
-        document.getElementById('detail-close').style.display = 'none';
+        document.getElementById('detail-close').style.display = 'flex';
         
-        currentPopup = new maplibregl.Popup({ closeButton: true, closeOnClick: true, maxWidth: '340px', offset: 15 })
+        currentPopup = new maplibregl.Popup({ closeButton: false, closeOnClick: true, maxWidth: '340px', offset: 15 })
             .setLngLat(feat.geometry.coordinates)
             .setDOMContent(detailEl)
             .addTo(State.map);
