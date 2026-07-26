@@ -34,7 +34,46 @@ El proyecto **Caries Urbanas** no es solo un mapa interactivo de lugares feos o 
 
 ---
 
-## 🌐 2. La Mirada Holística del SIG Web: De los Puntos a la Superficie
+## 🛠️ 2. Stack Tecnológico Utilizado y Arquitectura de Software
+
+El ecosistema tecnológico de **Caries Urbanas** fue seleccionado rigurosamente para combinar rendimiento en el cliente, precisión en el análisis espacial, animación de alta fidelidad y seguridad de datos sensibles:
+
+```
+ ┌──────────────────────────────────────────────────────────────────────────────────────────┐
+ │                                   STACK TECNOLÓGICO                                      │
+ ├──────────────────────────┬──────────────────────────┬────────────────────────────────────┤
+ │      FRONTEND WEB        │      SIG & GEODATOS      │         BACKEND & SEGURIDAD        │
+ ├──────────────────────────┼──────────────────────────┼────────────────────────────────────┤
+ │ • MapLibre GL JS v4.7    │ • Turf.js v7             │ • NestJS (TypeScript)              │
+ │ • GSAP v3.12 (Anim)     │ • QGIS (Digitalización)  │ • PostgreSQL + PostGIS             │
+ │ • HTML5 / CSS3 Vanilla   │ • IDE Santa Fe (Ord 12.7)│ • Schemas aislados (`pub`/`restr`) │
+ │ • JavaScript ES6+        │ • GeoJSON / KMZ          │ • AWS S3 (Presigned URLs)          │
+ └──────────────────────────┴──────────────────────────┴────────────────────────────────────┘
+```
+
+### 💻 Componentes del Stack:
+
+#### A. Frontend y Visor Geoespacial Web (Cliente):
+* **MapLibre GL JS (v4.7.1):** Librería open-source de alto rendimiento para renderizado de mapas vectoriales e interactivos mediante WebGL y aceleración por GPU.
+* **Turf.js (v7):** Motor de análisis espacial que ejecuta operaciones geométricas directamente en el navegador (cálculo de superficies, distancias, centroides, buffer zones, etc.).
+* **GSAP (GreenSock Animation Platform v3.12.7):** Librería de animaciones profesionales utilizada para lograr transiciones fluidas en modales, bottom sheets, la dona interactiva y efectos hápticos de la UI.
+* **HTML5, Vanilla CSS3 & JS Vanilla:** Diseño modular ultraligero sin dependencias pesadas, optimizado para celulares y navegadores móviles.
+* **Google Fonts (`Outfit` y `JetBrains Mono`):** Tipografía moderna que combina jerarquía visual clara para títulos y precisión técnica para coordenadas, lotes e IDs.
+
+#### B. Backend y Gestión de Datos (Servidor y Base de Datos):
+* **NestJS (TypeScript):** Framework estructurado en módulos independientes (`PublicModule` y `AdminModule`) que previene la fuga involuntaria de información mediante DTOs y serialización explícita (`@Exclude()`).
+* **PostgreSQL + PostGIS:** Base de datos relacional geoespacial de estándar industrial para almacenamiento de parcelas, consultas espaciales por radio y polígonos.
+* **Separación de Esquemas SQL & RLS:** Separación física entre el esquema `publico` (mapa, capas, agregados) y `restringido` (datos personales bajo Ley 25.326).
+* **Amazon S3:** Bucket privado para resguardo de fotografías de inspecciones servidas mediante URLs firmadas de corta duración.
+
+#### C. Herramientas SIG y Formatos de Datos:
+* **QGIS:** Software SIG utilizado para el procesamiento cartográfico, normalización de parcelas y trazado de polígonos.
+* **GeoJSON, KMZ & Shapefiles:** Formatos estándar para la ingesta de capas de distritos, zonificación (ROU) y puntos relevados.
+* **Infraestructura de Datos Espaciales (IDE Municipal - Ord. 12.715):** Fuente de integración para parcelario oficial y catastro de Santa Fe.
+
+---
+
+## 🌐 3. La Mirada Holística del SIG Web: De los Puntos a la Superficie
 
 Tradicionalmente, las iniciativas ciudadanas quedan atrapadas en mapas rígidos como Google My Maps (que solo muestran "pines"). La plataforma web **Caries Urbanas** implementa una **visión SIG holística en la web**:
 
@@ -56,7 +95,7 @@ Tradicionalmente, las iniciativas ciudadanas quedan atrapadas en mapas rígidos 
 
 ---
 
-## 👥 3. Modelo de Doble Propósito y UX de la Privacidad (Ley 25.326)
+## 👥 4. Modelo de Doble Propósito y UX de la Privacidad (Ley 25.326)
 
 Para servir con eficacia al **ciudadano** y al **funcionario/técnico administrativo**, el sistema adopta una **arquitectura de doble nivel**, contemplando la **Ley 25.326 de Protección de Datos Personales**.
 
@@ -73,16 +112,9 @@ Para servir con eficacia al **ciudadano** y al **funcionario/técnico administra
  └────────────────────────────────────────────┴────────────────────────────────────────────┘
 ```
 
-### 🔒 UX & Seguridad Backend (Fuga Imposible por Diseño)
-Para garantizar la privacidad sin sacrificar la agilidad UX:
-1. **Separación Física en Base de Datos:** Dos esquemas SQL separados (`publico` para inmuebles/geometría y `restringido` para titulares, CUIT, DNI y contactos).
-2. **Roles y Permisos DB:** El usuario público (`app_public`) solo tiene permiso `SELECT` sobre el esquema público y sobre vistas materializadas.
-3. **DTOs Explícitos en Backend (NestJS):** Serialización estricta mediante `@Exclude()` por defecto. Ningún endpoint público expone datos personales.
-4. **Imágenes Sensibles en S3:** Fotos privadas de inspecciones se sirven con *Presigned URLs* de corta duración tras verificación de rol.
-
 ---
 
-## 🔄 4. UX del Ciclo de Vida del Inmueble (Máquina de Estados)
+## 🔄 5. UX del Ciclo de Vida del Inmueble (Máquina de Estados)
 
 La experiencia de usuario refleja fielmente el procedimiento administrativo establecido en el proyecto de ordenanza de Lucas Simoniello:
 
@@ -118,7 +150,7 @@ La experiencia de usuario refleja fielmente el procedimiento administrativo esta
 
 ---
 
-## 🎨 5. Decisiones de Diseño UX/UI: ¿Qué Hicimos y Por Qué?
+## 🎨 6. Decisiones de Diseño UX/UI: ¿Qué Hicimos y Por Qué?
 
 | Elemento UX/UI | Razón Técnica / Empírica | Solución Implementada |
 | :--- | :--- | :--- |
@@ -130,7 +162,7 @@ La experiencia de usuario refleja fielmente el procedimiento administrativo esta
 
 ---
 
-## 🌍 6. Referentes Comparados de Políticas de Suelo
+## 🌍 7. Referentes Comparados de Políticas de Suelo
 
 El diseño de esta herramienta se nutre de experiencias exitosas de urbanismo geoespacial:
 
@@ -141,7 +173,7 @@ El diseño de esta herramienta se nutre de experiencias exitosas de urbanismo ge
 
 ---
 
-## 🛠️ 7. Próximos Pasos en la Hoja de Ruta (Roadmap)
+## 🛠️ 8. Próximos Pasos en la Hoja de Ruta (Roadmap)
 
 1. 📄 **Integración Catastral:** Gestión formal de la capa parcelaria con Catastro Municipal para pasar de puntos a polígonos exactos.
 2. 📍 **Geocodificación:** Normalización de las 56 caries pendientes en planilla para llegar al 100% de los 363 inmuebles georreferenciados.
