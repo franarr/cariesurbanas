@@ -261,6 +261,48 @@ function updateMapData() {
     State.map.getSource('caries-points').setData(filtered);
     State.map.getSource('caries-heat').setData(filtered);
     State.map.getSource('caries-clusters').setData(filtered);
+    updateChipCounts();
+    checkEmptyState(filtered.features.length);
+}
+
+// ─── CHIP COUNTS ─────────────────────────────────────
+function updateChipCounts() {
+    const all = State.geojson.features;
+    document.querySelectorAll('.quick-filters .chip[data-status]').forEach(chip => {
+        const status = chip.dataset.status;
+        // Apply district filter but not status filter to count each category
+        let base = all;
+        if (State.activeDistricts.length > 0) {
+            base = all.filter(f => State.activeDistricts.includes(f.properties.distrito));
+        }
+        const count = base.filter(f => f.properties.status === status).length;
+        // Update label keeping the dot
+        const dot = chip.querySelector('.chip-dot');
+        chip.innerHTML = '';
+        if (dot) chip.appendChild(dot);
+        chip.appendChild(document.createTextNode(`${chip.dataset.label || status === 'untreated' ? 'Sin tratar' : status === 'treating' ? 'En tratamiento' : 'Tratadas'} · ${count}`));
+        if (dot) chip.insertBefore(dot, chip.firstChild);
+    });
+}
+
+// ─── EMPTY STATE TOAST ───────────────────────────────
+let emptyToastTimeout = null;
+function checkEmptyState(count) {
+    let toast = document.getElementById('empty-toast');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'empty-toast';
+        toast.style.cssText = `position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#1A1A2E;color:white;padding:10px 20px;border-radius:100px;font-size:13px;font-weight:500;font-family:var(--font);z-index:200;box-shadow:0 4px 20px rgba(0,0,0,0.3);transition:opacity 0.3s;opacity:0;pointer-events:none;white-space:nowrap;`;
+        document.body.appendChild(toast);
+    }
+    if (emptyToastTimeout) clearTimeout(emptyToastTimeout);
+    if (count === 0) {
+        toast.textContent = 'Sin resultados con los filtros actuales';
+        toast.style.opacity = '1';
+        emptyToastTimeout = setTimeout(() => { toast.style.opacity = '0'; }, 3500);
+    } else {
+        toast.style.opacity = '0';
+    }
 }
 
 // ─── UI COMPONENTS ───────────────────────────────────
@@ -299,10 +341,13 @@ function setupSearch() {
 }
 
 function setupStatusChips() {
+    // Store original labels
+    document.querySelectorAll('.quick-filters .chip[data-status]').forEach(c => {
+        c.dataset.label = c.textContent.trim();
+    });
     document.querySelectorAll('.quick-filters .chip[data-status]').forEach(c => {
         c.addEventListener('click', () => {
             const status = c.dataset.status;
-            // Toggle off if already active
             if (State.activeStatus === status) {
                 State.activeStatus = 'all';
                 c.classList.remove('chip-active');
@@ -321,6 +366,18 @@ function setupLayersModal() {
         radio.addEventListener('change', e => {
             const isSat = e.target.value === 'satellite';
             State.map.setLayoutProperty('satellite-layer', 'visibility', isSat ? 'visible' : 'none');
+
+            // Ocultar/mostrar todas las capas vectoriales del estilo base de CartoDB
+            const baseLayers = State.map.getStyle().layers;
+            baseLayers.forEach(layer => {
+                // Saltear nuestras propias capas (no tocamos nada que no sea de CartoDB)
+                const ownLayers = ['satellite-layer','distritos-fill','distritos-line','distritos-label',
+                    'heatmap','points','clusters','cluster-count','measure-fill','measure-line',
+                    'measure-pts','highlight-ring'];
+                if (!ownLayers.includes(layer.id)) {
+                    State.map.setLayoutProperty(layer.id, 'visibility', isSat ? 'none' : 'visible');
+                }
+            });
         });
     });
 
@@ -387,12 +444,16 @@ function setupSidebar() {
         const mapEl = document.getElementById('map');
 
         if (State.isMeasuring) {
-            bar.classList.remove('hidden'); mapEl.classList.add('measure-cursor');
+            bar.classList.remove('hidden');
+            document.getElementById('measure-banner').classList.remove('hidden');
+            mapEl.classList.add('measure-cursor');
             document.getElementById('measure-text').textContent = 'Clic en el mapa para medir';
             State.measurePts = []; State.measureFinished = false; updateMeasure();
             State.map.on('click', handleMeasureClick);
         } else {
-            bar.classList.add('hidden'); mapEl.classList.remove('measure-cursor');
+            bar.classList.add('hidden');
+            document.getElementById('measure-banner').classList.add('hidden');
+            mapEl.classList.remove('measure-cursor');
             State.map.off('click', handleMeasureClick);
             clearMeasure();
         }
@@ -467,13 +528,37 @@ function openDetail(feat) {
     const p = feat.properties;
     const detailEl = document.getElementById('feature-detail');
     
-    document.getElementById('detail-badge').textContent = `LOTE #${p.nro || '—'}`;
+    // Status badge color
+    const statusColors = { treated: '#34A853', treating: '#F9A825', untreated: '#E85D26' };
+    const statusLabels = { treated: 'TRATADA', treating: 'EN TRATAMIENTO', untreated: 'SIN TRATAR' };
+    const badge = document.getElementById('detail-badge');
+    badge.textContent = `LOTE #${p.nro || '—'}`;
+    badge.style.background = statusColors[p.status] ? `${statusColors[p.status]}18` : 'var(--accent-10)';
+    badge.style.color = statusColors[p.status] || 'var(--accent)';
+
+    // Status pill
+    let statusPill = document.getElementById('detail-status-pill');
+    if (!statusPill) {
+        statusPill = document.createElement('span');
+        statusPill.id = 'detail-status-pill';
+        statusPill.style.cssText = `display:inline-block;padding:2px 10px;border-radius:100px;font-size:10px;font-weight:700;letter-spacing:1px;margin-left:8px;`;
+        badge.parentNode.insertBefore(statusPill, badge.nextSibling);
+    }
+    statusPill.textContent = statusLabels[p.status] || '';
+    statusPill.style.background = statusColors[p.status] ? `${statusColors[p.status]}18` : 'transparent';
+    statusPill.style.color = statusColors[p.status] || 'transparent';
+
     document.getElementById('detail-title').textContent = p.ubicacion || 'Sin dirección';
     document.getElementById('detail-address').textContent = p.ubicacion || '—';
     document.getElementById('detail-district').textContent = p.distrito || '—';
     document.getElementById('detail-zone').textContent = `Zona ${p.zonainmob || '—'}`;
     document.getElementById('detail-id').textContent = `#${p.nro || '—'}`;
-    document.getElementById('detail-btn-fly').onclick = () => State.map.flyTo({ center: feat.geometry.coordinates, zoom: 17, duration: 1000 });
+
+    // Ver en Google Maps — gratis, sin API
+    const addr = encodeURIComponent(`${p.ubicacion || ''}, Santa Fe, Argentina`);
+    const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${addr}`;
+    document.getElementById('detail-btn-fly').textContent = 'Ver en Google Maps →';
+    document.getElementById('detail-btn-fly').onclick = () => window.open(mapsUrl, '_blank', 'noopener');
     
     const imgContainer = document.getElementById('detail-image-container');
     const imgElement = document.getElementById('detail-image');
@@ -545,6 +630,75 @@ function updateStats() {
     animateNum(document.getElementById('stat-zones'), new Set(features.map(f => f.properties.zonainmob)).size);
     document.getElementById('stat-critical').textContent = maxD;
 
+    // ── Status counts ──
+    const nTreated  = features.filter(f => f.properties.status === 'treated').length;
+    const nTreating = features.filter(f => f.properties.status === 'treating').length;
+    const nUntreated= features.filter(f => f.properties.status === 'untreated').length;
+    const total = features.length || 1;
+    const CIRC = 251.3; // 2 * π * 40
+
+    // ── Donut chart (SVG stroke-dasharray) ──
+    const pTreated  = nTreated  / total;
+    const pTreating = nTreating / total;
+    const pUntreated= nUntreated/ total;
+
+    const dTreated  = pTreated  * CIRC;
+    const dTreating = pTreating * CIRC;
+    const dUntreated= pUntreated* CIRC;
+
+    const oTreated  = 0;
+    const oTreating = CIRC - dTreated;
+    const oUntreated= CIRC - dTreated - dTreating;
+
+    const setArc = (id, dash, offset) => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.style.transition = 'stroke-dasharray 0.9s cubic-bezier(0.16,1,0.3,1), stroke-dashoffset 0.9s cubic-bezier(0.16,1,0.3,1)';
+            el.setAttribute('stroke-dasharray', `${dash} ${CIRC - dash}`);
+            el.setAttribute('stroke-dashoffset', -oTreated);
+        }
+    };
+
+    // Assign dashoffsets in sequence (SVG stacking trick)
+    const elT  = document.getElementById('donut-treated');
+    const elTg = document.getElementById('donut-treating');
+    const elU  = document.getElementById('donut-untreated');
+
+    if (elT)  { elT.setAttribute('stroke-dasharray',  `${dTreated}  ${CIRC - dTreated}`);  elT.setAttribute('stroke-dashoffset', 0); }
+    if (elTg) { elTg.setAttribute('stroke-dasharray', `${dTreating} ${CIRC - dTreating}`); elTg.setAttribute('stroke-dashoffset', -(dTreated)); }
+    if (elU)  { elU.setAttribute('stroke-dasharray',  `${dUntreated} ${CIRC - dUntreated}`); elU.setAttribute('stroke-dashoffset', -(dTreated + dTreating)); }
+
+    // ── Donut legend ──
+    const legendEl = document.getElementById('status-legend');
+    if (legendEl) {
+        const items = [
+            { color: '#E85D26', label: 'Sin tratar',       count: nUntreated },
+            { color: '#F9A825', label: 'En tratamiento',   count: nTreating  },
+            { color: '#34A853', label: 'Tratadas',         count: nTreated   },
+        ];
+        legendEl.innerHTML = items.map(item => `
+            <div style="display:flex; align-items:center; gap:10px;">
+                <div style="width:12px; height:12px; border-radius:3px; background:${item.color}; flex-shrink:0;"></div>
+                <div style="flex:1; font-size:13px; color:var(--text-body);">${item.label}</div>
+                <div style="font-family:var(--font-mono); font-size:14px; font-weight:700; color:var(--text-dark);">${item.count}</div>
+                <div style="font-size:11px; color:var(--text-muted); min-width:34px; text-align:right;">${Math.round(item.count/total*100)}%</div>
+            </div>
+        `).join('');
+    }
+
+    // ── Progress bar ──
+    const pt = document.getElementById('prog-treated');
+    const pg = document.getElementById('prog-treating');
+    const pu = document.getElementById('prog-untreated');
+    if (pt) pt.style.width = `${pTreated * 100}%`;
+    if (pg) pg.style.width = `${pTreating * 100}%`;
+    if (pu) pu.style.width = `${pUntreated * 100}%`;
+    const progLabel = document.getElementById('prog-label');
+    if (progLabel) {
+        const resolved = Math.round((nTreated + nTreating) / total * 100);
+        progLabel.textContent = `${resolved}% de lotes con intervención activa o resuelta`;
+    }
+
     // District Chart
     const sortedD = Object.entries(dc).sort((a, b) => b[1] - a[1]);
     const maxDVal = sortedD[0] ? sortedD[0][1] : 1;
@@ -566,9 +720,41 @@ function updateStats() {
         </div>`).join('');
 }
 
-function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
-document.querySelectorAll('.modal-close').forEach(btn => btn.addEventListener('click', () => btn.closest('.modal').classList.add('hidden')));
-document.querySelectorAll('.modal-overlay').forEach(ov => ov.addEventListener('click', () => ov.closest('.modal').classList.add('hidden')));
+function openModal(id) {
+    document.getElementById(id).classList.remove('hidden');
+    document.getElementById('bottom-bar-container').style.opacity = '0';
+    document.getElementById('bottom-bar-container').style.pointerEvents = 'none';
+
+    // #4: Sync layers modal state when opening it
+    if (id === 'modal-layers' && State.map) {
+        const isSat = State.map.getLayoutProperty('satellite-layer', 'visibility') === 'visible';
+        const radioVal = isSat ? 'satellite' : 'vector';
+        const radio = document.querySelector(`input[name="base-map"][value="${radioVal}"]`);
+        if (radio) radio.checked = true;
+
+        const heatVis = State.map.getLayoutProperty('heatmap', 'visibility');
+        document.getElementById('layer-heatmap').checked = (heatVis === 'visible');
+
+        const clustVis = State.map.getLayoutProperty('clusters', 'visibility');
+        document.getElementById('layer-clusters').checked = (clustVis === 'visible');
+
+        if (State.distritos) {
+            const distVis = State.map.getLayoutProperty('distritos-fill', 'visibility');
+            document.getElementById('layer-districts').checked = (distVis === 'visible');
+        }
+    }
+}
+function closeModal(el) {
+    el.classList.add('hidden');
+    // Only restore pill if no other modal is open
+    const anyOpen = document.querySelector('.modal:not(.hidden)');
+    if (!anyOpen) {
+        document.getElementById('bottom-bar-container').style.opacity = '1';
+        document.getElementById('bottom-bar-container').style.pointerEvents = 'auto';
+    }
+}
+document.querySelectorAll('.modal-close').forEach(btn => btn.addEventListener('click', () => closeModal(btn.closest('.modal'))));
+document.querySelectorAll('.modal-overlay').forEach(ov => ov.addEventListener('click', () => closeModal(ov.closest('.modal'))));
 
 // ─── CAROUSEL ────────────────────────────────────────
 function setupCarousel() {
@@ -674,6 +860,15 @@ async function init() {
 
         addSourcesAndLayers();
         setupMapEvents();
+        
+        // Fix #1: satellite is default — hide CartoDB vector layers immediately
+        const ownLayers = ['satellite-layer','distritos-fill','distritos-line','distritos-label',
+            'heatmap','points','clusters','cluster-count','measure-fill','measure-line','measure-pts','highlight-ring'];
+        State.map.getStyle().layers.forEach(layer => {
+            if (!ownLayers.includes(layer.id)) {
+                State.map.setLayoutProperty(layer.id, 'visibility', 'none');
+            }
+        });
         animateLoader(85);
 
         setupSearch();

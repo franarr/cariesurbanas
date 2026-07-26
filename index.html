@@ -28,9 +28,8 @@
     <!-- ========== LOADING SCREEN ========== -->
     <div id="loading-screen">
         <div class="loader-content">
-            <h1 class="loader-brand">Caries Urbanas</h1>
             <div class="loader-pin">
-                <img src="image/cariesurbanas.svg" alt="Logo Caries Urbanas" style="width: 80px;">
+                <img src="image/cariesurbanas.svg" alt="Logo Caries Urbanas" style="width: 96px;">
             </div>
             <p class="loader-text">Cargando observatorio urbano...</p>
             <div class="loader-bar">
@@ -63,29 +62,41 @@
     <div id="right-sidebar">
         <div class="sidebar-fabs">
             <!-- Measure -->
-            <button class="fab" id="fab-measure" title="Herramienta de Medición">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="2" y="7" width="20" height="10" rx="2" ry="2"/><line x1="6" y1="7" x2="6" y2="11"/><line x1="10" y1="7" x2="10" y2="9"/><line x1="14" y1="7" x2="14" y2="11"/><line x1="18" y1="7" x2="18" y2="9"/>
-                </svg>
-            </button>
+            <div class="fab-item">
+                <button class="fab" id="fab-measure" title="Herramienta de Medición">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="2" y="7" width="20" height="10" rx="2" ry="2"/><line x1="6" y1="7" x2="6" y2="11"/><line x1="10" y1="7" x2="10" y2="9"/><line x1="14" y1="7" x2="14" y2="11"/><line x1="18" y1="7" x2="18" y2="9"/>
+                    </svg>
+                </button>
+                <span class="fab-label">Medir</span>
+            </div>
             <!-- Info -->
-            <button class="fab" id="fab-info" title="Sobre el Proyecto">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
-                </svg>
-            </button>
+            <div class="fab-item">
+                <button class="fab" id="fab-info" title="Sobre el Proyecto">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
+                    </svg>
+                </button>
+                <span class="fab-label">Info</span>
+            </div>
             <!-- Participate -->
-            <button class="fab" id="fab-participate" title="Participación Ciudadana">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-                </svg>
-            </button>
+            <div class="fab-item">
+                <button class="fab" id="fab-participate" title="Participación Ciudadana">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                    </svg>
+                </button>
+                <span class="fab-label">Participar</span>
+            </div>
             <!-- Layers -->
-            <button class="fab" id="fab-layers" title="Capas">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                    <polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 12 12 17 22 12"/><polyline points="2 17 12 22 22 17"/>
-                </svg>
-            </button>
+            <div class="fab-item">
+                <button class="fab" id="fab-layers" title="Capas">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 12 12 17 22 12"/><polyline points="2 17 12 22 22 17"/>
+                    </svg>
+                </button>
+                <span class="fab-label">Capas</span>
+            </div>
         </div>
     </div>
 
@@ -99,6 +110,14 @@
         </button>
     </div>
 
+    <!-- ========== MEASURE MODE BANNER ========== -->
+    <div id="measure-banner" class="measure-banner hidden">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0">
+            <rect x="2" y="7" width="20" height="10" rx="2" ry="2"/><line x1="6" y1="7" x2="6" y2="11"/><line x1="10" y1="7" x2="10" y2="9"/><line x1="14" y1="7" x2="14" y2="11"/><line x1="18" y1="7" x2="18" y2="9"/>
+        </svg>
+        Modo medición activo &mdash; tocá el mapa para agregar puntos
+    </div>
+
     <!-- ========== ONBOARDING TOUR ========== -->
     <div id="onboarding-tour" class="modal hidden" style="z-index: 9999;">
         <div class="modal-overlay" id="tour-overlay" style="background: rgba(0,0,0,0.75); backdrop-filter: blur(3px);"></div>
@@ -107,7 +126,7 @@
             <div style="display: flex; justify-content: center; align-items: center; margin: 0 auto 16px;">
                 <img src="image/cariesurbanas.svg" alt="Caries Urbanas Logo" style="width: 48px;">
             </div>
-            <h2 style="margin: 0 0 8px; font-size: 20px; font-family: 'Montserrat', sans-serif;">¡Bienvenido al Observatorio!</h2>
+            <h2 style="margin: 0 0 8px; font-size: 20px; font-family: var(--font); font-weight: 800;">¡Bienvenido al Observatorio!</h2>
             <p style="margin: 0 0 20px; font-size: 14px; color: var(--text-muted);">Te mostramos rápidamente cómo explorar el mapa de Caries Urbanas.</p>
             <button id="tour-start" class="btn-primary" style="width: 100%; padding: 12px; font-size: 14px;">Comenzar recorrido</button>
         </div>
@@ -239,9 +258,13 @@
             </div>
             <!-- Carousel controls -->
             <div class="carousel-controls">
-                <button class="carousel-btn" id="carousel-prev">←</button>
+                <button class="carousel-btn" id="carousel-prev">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                </button>
                 <div class="carousel-dots" id="carousel-dots"></div>
-                <button class="carousel-btn" id="carousel-next">→</button>
+                <button class="carousel-btn" id="carousel-next">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                </button>
             </div>
         </div>
     </div>
@@ -251,43 +274,77 @@
         <div class="modal-overlay"></div>
         <div class="modal-card bottom-sheet modal-card-wide">
             <button class="modal-close" data-close="modal-stats">✕</button>
-            <h2 class="modal-title">Estadísticas</h2>
-            <p class="modal-subtitle">Análisis espacial del relevamiento</p>
+            <h2 class="modal-title">Observatorio</h2>
+            <p class="modal-subtitle">Análisis espacial del relevamiento · <strong>Actualizado: Junio 2026</strong></p>
 
+            <!-- TOP STATS ROW -->
             <div class="stats-grid">
                 <div class="stat-card stat-accent">
+                    <div class="stat-icon">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                    </div>
                     <div class="stat-number" id="stat-total">0</div>
                     <div class="stat-label">Lotes Relevados</div>
                 </div>
                 <div class="stat-card">
+                    <div class="stat-icon">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
+                    </div>
                     <div class="stat-number" id="stat-districts">0</div>
-                    <div class="stat-label">Distritos Afectados</div>
+                    <div class="stat-label">Distritos</div>
                 </div>
                 <div class="stat-card">
+                    <div class="stat-icon">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                    </div>
                     <div class="stat-number" id="stat-zones">0</div>
-                    <div class="stat-label">Zonas Inmobiliarias</div>
+                    <div class="stat-label">Zonas Inmob.</div>
                 </div>
                 <div class="stat-card stat-critical">
-                    <div class="stat-number" id="stat-critical">—</div>
-                    <div class="stat-label">Distrito Más Crítico</div>
+                    <div class="stat-icon">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    </div>
+                    <div class="stat-number" id="stat-critical" style="font-size:18px; padding-top:4px">—</div>
+                    <div class="stat-label">Distrito Crítico</div>
                 </div>
             </div>
 
+            <!-- ESTADO GENERAL (Donut + leyenda) -->
+            <div class="chart-section" style="margin-top: 20px;">
+                <h3 class="filter-label">Estado General</h3>
+                <div id="status-donut-wrapper" style="display:flex; align-items:center; gap: 20px; padding: 8px 0;">
+                    <svg id="status-donut" width="110" height="110" viewBox="0 0 110 110" style="flex-shrink:0; transform: rotate(-90deg);">
+                        <circle cx="55" cy="55" r="40" fill="none" stroke="var(--border)" stroke-width="18"/>
+                        <circle id="donut-treated"  cx="55" cy="55" r="40" fill="none" stroke="#34A853" stroke-width="18" stroke-linecap="butt" stroke-dasharray="0 251.3"/>
+                        <circle id="donut-treating" cx="55" cy="55" r="40" fill="none" stroke="#F9A825" stroke-width="18" stroke-linecap="butt" stroke-dasharray="0 251.3"/>
+                        <circle id="donut-untreated" cx="55" cy="55" r="40" fill="none" stroke="#E85D26" stroke-width="18" stroke-linecap="butt" stroke-dasharray="0 251.3"/>
+                    </svg>
+                    <div id="status-legend" style="flex:1; display:flex; flex-direction:column; gap:8px;"></div>
+                </div>
+            </div>
+
+            <!-- PROGRESO DE RESOLUCIÓN -->
+            <div class="chart-section" style="margin-top:4px;">
+                <h3 class="filter-label">Progreso de Resolución</h3>
+                <div style="height: 10px; border-radius: 100px; overflow: hidden; display:flex; margin-top: 8px; background: var(--border);">
+                    <div id="prog-treated"  style="background:#34A853; height:100%; transition: width 0.8s var(--ease);"></div>
+                    <div id="prog-treating" style="background:#F9A825; height:100%; transition: width 0.8s var(--ease);"></div>
+                    <div id="prog-untreated" style="background:#E85D26; height:100%; transition: width 0.8s var(--ease);"></div>
+                </div>
+                <div id="prog-label" style="font-size:11px; color:var(--text-muted); margin-top:6px; text-align:center;"></div>
+            </div>
+
             <!-- District Chart -->
-            <div class="chart-section">
+            <div class="chart-section" style="margin-top: 20px; border-top: 1px solid var(--border); padding-top: 16px;">
                 <h3 class="filter-label">Distribución por Distrito</h3>
                 <div id="district-chart" class="district-chart"></div>
             </div>
 
             <!-- ROU Chart -->
-            <div class="chart-section" style="margin-top: 24px; border-top: 1px solid var(--border); padding-top: 16px;">
+            <div class="chart-section" style="margin-top: 20px; border-top: 1px solid var(--border); padding-top: 16px;">
                 <h3 class="filter-label">Zonificación (ROU)</h3>
                 <div id="rou-chart" class="district-chart"></div>
             </div>
-            
-            <p style="font-size: 11px; color: var(--text-muted); text-align: center; margin-top: 10px;">
-                *Los datos de distritos y zonas son reales, extraídos del set de datos oficial.
-            </p>
         </div>
     </div>
 
@@ -369,8 +426,8 @@
     <!-- ========== MEASURE TOOLTIP ========== -->
     <div id="measure-bar" class="measure-bar hidden">
         <span id="measure-text">Clic para medir</span>
-        <button id="measure-finish" class="btn-primary" style="padding: 4px 10px; font-size: 11px; margin-left: 8px; border-radius: 20px;">Finalizar</button>
-        <button id="measure-clear" class="measure-clear">✕</button>
+        <button id="measure-finish" class="btn-primary" style="padding: 4px 12px; font-size: 11px; margin-left: 8px; border-radius: 20px;">&#10003; Listo</button>
+        <button id="measure-clear" class="measure-clear" title="Limpiar medición">×</button>
     </div>
 
     <script src="app.js"></script>
